@@ -21,11 +21,25 @@ References:
    - https://developer.mozilla.org/en-US/docs/JSON#JSON_in_Firefox_2
 */
 
+var sys = require('util'),
+    rest = require('restler');
+
+var getweb = function(x) {
+    rest.get(x).on('complete', function(result) {
+	if (result instanceof Error) {
+	    sys.puts('Error: ' + result.message);
+	    this.retry(5000);
+	   } else {
+	    return result;
+}
+}); };
+
 var fs = require('fs');
 var program = require('commander');
 var cheerio = require('cheerio');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
+var URL_DEFAULT = "https://enigmatic-hollows-9558.herokuapp.com/"
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
@@ -66,6 +80,7 @@ if(require.main == module) {
     program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
+	.option('-u, --url <url>', 'url', clone(getweb), URL_DEFAULT)
         .parse(process.argv);
     var checkJson = checkHtmlFile(program.file, program.checks);
     var outJson = JSON.stringify(checkJson, null, 4);
